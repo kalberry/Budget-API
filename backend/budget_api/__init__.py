@@ -1,15 +1,21 @@
 import os
 import markdown
 
+from budget_api.models import User, Bill, Database
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
 
 app = Flask(__name__)
-
 api = Api(app)
+db = models.Database()
+
+app.config['SECRET_KEY'] = 'applesauce'
+db.create_tables()
 
 @app.route("/")
 def index():
+
+
     with open(os.path.dirname(app.root_path) + '/README.md', 'r') as markdown_file:
         content = markdown_file.read()
 
@@ -63,6 +69,8 @@ class Bill(Resource):
 
         args = parser.parse_args()
 
+        #db.get_bills()
+
         if (args['user_id'] and args['id']):
             return {"message": "Bad Request"}, 400
         if (args['user_id'] and not args['id']):
@@ -70,7 +78,7 @@ class Bill(Resource):
         elif (not args['user_id'] and args['id']):
             return {"message": "Getting bill with id " + args['id']}, 200
 
-        return {"message": "Getting all bills"}, 200
+        return {"message": "Getting all bills", "data": db.get_bills()}, 200
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -85,7 +93,15 @@ class Bill(Resource):
 
         args = parser.parse_args()
 
-        if ((args['frequency'] and not args['due_date']) or (not args['frequency'] and args['due_date'])):
+        if args['frequency'] and not args['due_date']:
+            b = models.Bill(user_id=args['user_id'], name=args['name'], cost=args['cost'], due_date=args['due_date'], frequency=None, last_paid=args['last_paid'], category=args['category'])
+
+            db.add_bill(b)
+            return {"message": args['name'] + " bill with the cost of $" + args['cost']}, 201
+        elif not args['frequency'] and args['due_date']:
+            b = models.Bill(user_id=args['user_id'], name=args['name'], cost=args['cost'], due_date=args['due_date'], frequency=None, last_paid=args['last_paid'], category=args['category'])
+
+            db.add_bill(b)
             return {"message": args['name'] + " bill with the cost of $" + args['cost']}, 201
 
         return {"message": "Bad Request"}, 400
