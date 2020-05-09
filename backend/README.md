@@ -193,6 +193,7 @@ The responses will have the form
 **Response**
 
 - `401 Unauthorized` if the user is not authorized for this request
+- `400 Bad Request` if information is missing from the request
 - `201 Created` on success
 
 ```json
@@ -247,6 +248,7 @@ The responses will have the form
 
 - `404 Not Found` if the bill does not exist
 - `401 Unauthorized` if the user is not authorized for this request
+- `400 Bad Request` if information is missing from the request
 - `200 OK` on success
 
 ``` json
@@ -343,10 +345,11 @@ The responses will have the form
 
 **Definition**
 
-`PUT /users/<id>`
+`PUT /users`
 
 **Arguments**
 
+- `"id":int` id of the user
 - `"email":string` optional. Update the email of the user
 - `"password_hash:string"` optional. Update the user's password hash
 - `"starting_pay_date:string"` optional. Update the last paid date in "MM-DD-YYYY" format
@@ -363,10 +366,11 @@ The responses will have the form
 
 **Definition**
 
-`PUT /bills/<id>`
+`PUT /bills`
 
 **Arguments**
 
+- `"id":int` id of the bill
 - `"name":string` optional. Change the name of the company you pay the bill to
 - `"cost:float"` optional. Change how much the bill costs per month
 - `"category:string"` optional. Change the category
