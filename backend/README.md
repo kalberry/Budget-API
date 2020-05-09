@@ -15,59 +15,110 @@ The responses will have the form
 ```
 
 ## API
-### Get user data
+### Get all user data
 **Definition**
 
-`GET /users/<user_id>`
+`GET /users`
+
+**Arguments**
+
+- `"id":int` optional. Return all information given a user id
 
 **Response**
 
 - `404 Not Found` if user does not exist
+- `401 Unauthorized` if the user is not authorized for this request
 - `200 OK` on success
 
 ``` json
-{
-  "id": 4,
-  "email": "janedoe@email.com",
-  "starting_pay_date": "03/02/2020",
-  "pay_frequency": 14,
-  "bills":
-  [
-    {
-      "id": "6",
-      "name": "National Grid",
-      "cost": "43.47",
-      "due_date": 0,
-      "frequency": 30,
-      "last_paid": "03-07-2020",
-      "category": "utilities"
-    },
-    {
-      "id": "12",
-      "name": "Spectrum",
-      "cost": "49.99",
-      "due_date": 7,
-      "frequency": 30,
-      "last_paid": "03-14-2020",    
-      "category": "utilities"
-    }
-  ],
-  "pay_period_expenses":
-  [
-    {
-      "id": "3",
-      "name": "Groceries",
-      "cost": "250",
-      "category": "food"
-    },
-    {
-      "id": "5",
-      "name": "Gas",
-      "cost": "40.00",
-      "category": "automotive"
-    }
-  ]
-}
+[
+  {
+    "id": 4,
+    "email": "janedoe@email.com",
+    "starting_pay_date": "03/02/2020",
+    "pay_frequency": 14,
+    "pay_dates": [0],
+    "bills":
+    [
+      {
+        "id": 6,
+        "name": "National Grid",
+        "cost": "43.47",
+        "due_date": 0,
+        "frequency": 30,
+        "last_paid": "03-07-2020",
+        "category": "utilities"
+      },
+      {
+        "id": 12,
+        "name": "Spectrum",
+        "cost": "49.99",
+        "due_date": 7,
+        "frequency": 30,
+        "last_paid": "03-14-2020",    
+        "category": "utilities"
+      }
+    ],
+    "pay_period_expenses":
+    [
+      {
+        "id": 3,
+        "name": "Groceries",
+        "cost": "250",
+        "category": "food"
+      },
+      {
+        "id": 5,
+        "name": "Gas",
+        "cost": "40.00",
+        "category": "automotive"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "email": "johndoe@email.com",
+    "starting_pay_date": "02/25/2020",
+    "pay_frequency": 0,
+    "pay_dates": [1,15],
+    "bills":
+    [
+      {
+        "id": 6,
+        "name": "National Grid",
+        "cost": "43.47",
+        "due_date": 0,
+        "frequency": 30,
+        "last_paid": "03-07-2020",
+        "category": "utilities"
+      },
+      {
+        "id": 12,
+        "name": "Spectrum",
+        "cost": "49.99",
+        "due_date": 7,
+        "frequency": 30,
+        "last_paid": "03-14-2020",    
+        "category": "utilities"
+      }
+    ],
+    "pay_period_expenses":
+    [
+      {
+        "id": 3,
+        "name": "Groceries",
+        "cost": "250",
+        "category": "food"
+      },
+      {
+        "id": 5,
+        "name": "Gas",
+        "cost": "40.00",
+        "category": "automotive"
+      }
+    ]
+  }
+]
 ```
 
 ### Create new user
@@ -81,17 +132,20 @@ The responses will have the form
 - `"password_hash:string"` user's password hash
 - `"starting_pay_date:string"` Last paid date in "MM-DD-YYYY" format
 - `"pay_frequency:int"` How often the user gets paid in days
+- `"pay_dates:int"` Dates the user gets paid every month
 
 **Response**
 
-`201 Created` on success
+- `401 Unauthorized` if the user is not authorized for this request
+- `201 Created` on success
 
 ``` json
 {
   "id": 4,
   "email": "janedoe@email.com",
   "starting_pay_date": "03/02/2020",
-  "pay_frequency": 14
+  "pay_frequency": 14,
+  "pay_dates": [0]
 }
 ```
 
@@ -107,76 +161,18 @@ The responses will have the form
 
 **Response**
 
-`404 Not Found` if email or password is invalid
-`200 OK` on success
+- `404 Not Found` if email or password is invalid
+- `401 Unauthorized` if the user is not authorized for this request
+- `200 OK` on success
 
 ``` json
 {
   "id": 4,
   "email": "janedoe@email.com",
   "starting_pay_date": "03/02/2020",
-  "pay_frequency": 14
+  "pay_frequency": 14,
+  "pay_dates": [0]
 }
-```
-
-### List all bills
-**Definition**
-
-`GET /bills/<user_id>`
-
-**Response**
-
-- `404 Not Found` bills for this user id not found
-- `200 OK` on success
-
-```json
-[
-  {
-    "id": "6",
-    "name": "National Grid",
-    "cost": "43.47",
-    "due_date": 0,
-    "frequency": 30,
-    "last_paid": "03-07-2020",
-    "category": "utilities"
-  },
-  {
-    "id": "12",
-    "name": "Spectrum",
-    "cost": "49.99",
-    "due_date": 7,
-    "frequency": 30,
-    "last_paid": "03-14-2020",    
-    "category": "utilities"
-  }
-]
-```
-
-### List all pay period expenses
-**Definition**
-
-`GET /ppe/<user_id>`
-
-**Response**
-
-- `404 Not Found` pay period expenses for this user not found
-- `200 OK` on success
-
-```json
-[
-  {
-    "id": "3",
-    "name": "Groceries",
-    "cost": "250",
-    "category": "food"
-  },
-  {
-    "id": "5",
-    "name": "Gas",
-    "cost": "40.00",
-    "category": "automotive"
-  }
-]
 ```
 
 ### Add new bills
@@ -186,7 +182,7 @@ The responses will have the form
 
 **Arguments**
 
-- `"user_id":int` id of the user adding to bills
+- `"user_id":int` id of the user the bill will apply to
 - `"name":string` name of the company you pay the bill to
 - `"cost:float"` how much the bill costs per month
 - `"due_date:int"` What day per month the bill falls on. Choose this or frequency
@@ -196,11 +192,12 @@ The responses will have the form
 
 **Response**
 
-`201 Created` on success
+- `401 Unauthorized` if the user is not authorized for this request
+- `201 Created` on success
 
 ```json
 {
-  "id": "6",
+  "id": 6,
   "name": "National Grid",
   "cost": "43.47",
   "due_date": 0,
@@ -220,47 +217,60 @@ The responses will have the form
 - `"user_id":int` id of the user adding to pay period expenses
 - `"name":string` name of pay period expense
 - `"cost:float"` how much the pay period expense costs
-- `"category:string"` Optional. If the user wants to put it in a specific category
+- `"category:string"` optional. If the user wants to put it in a specific category
 
 **Response**
 
-`201 Created` on success
+- `401 Unauthorized` if the user is not authorized for this request
+- `201 Created` on success
 
 ```json
 {
-  "id": "6",
+  "id": 6,
   "name": "National Grid",
   "cost": "43.47",
   "category": "utilities"
 }
 ```
 
-## Lookup bill details
+## Lookup all bills
 **Definition**
 
 `GET /bills`
 
 **Arguments**
 
-- `"user_id":int` id of the user adding to pay period expenses
-- `"id":int` id of the bill
+- `"id":int` optional. Returns bill data based on bill ids
+- `"user_id":int` optional. Returns a list of bills that the id of the user the bill will apply to
 
 **Response**
 
-- `404 Not Found` if the bill does not exist for that user
+- `404 Not Found` if the bill does not exist
+- `401 Unauthorized` if the user is not authorized for this request
 - `200 OK` on success
 
 ``` json
-{
-  "id": "6",
-  "name": "National Grid",
-  "cost": "43.47",
-  "due_date": 0,
-  "frequency": 30,
-  "last_paid": "03-07-2020",
-  "category": "utilities"
-}
-
+[
+  {
+    "id": 6,
+    "name": "National Grid",
+    "cost": "43.47",
+    "due_date": 0,
+    "frequency": 30,
+    "last_paid": "03-07-2020",
+    "category": "utilities",
+    "user_id": 4
+  },
+  {
+    "id": 12,
+    "name": "Spectrum",
+    "cost": "49.99",
+    "due_date": 7,
+    "frequency": 30,
+    "last_paid": "03-14-2020",    
+    "category": "utilities"
+  }
+]
 ```
 ## Lookup pay period expense details
 **Definition**
@@ -269,21 +279,32 @@ The responses will have the form
 
 **Arguments**
 
-- `"user_id":int` id of the user adding to pay period expenses
-- `"id":int` id of the bill
+- `"id":int` optional. Returns pay period expenses data based on pay period expense ids
+- `"user_id":int` optional. Returns a list of pay period expenses that the id of the user the pay period expense will apply
 
 **Response**
 
-- `404 Not Found` if the pay period expense does not exist for that user
+- `404 Not Found` if the pay period expense does not exist
+- `401 Unauthorized` if the user is not authorized for this request
 - `200 OK` on success
 
 ``` json
-{
-  "id": "6",
-  "name": "National Grid",
-  "cost": "43.47",
-  "category": "utilities"
-}
+[
+  {
+    "id": 6,
+    "name": "National Grid",
+    "cost": "43.47",
+    "category": "utilities",
+    "user_id": 4
+  },
+  {
+    "id": 5,
+    "name": "Gas",
+    "cost": "40.00",
+    "category": "automotive"
+  }
+]
+
 ```
 
 ## Delete a bill
@@ -294,26 +315,188 @@ The responses will have the form
 
 **Arguments**
 
-- `"user_id":int` id of the user looking to remove bill
-- `"id":int` id of the bill
+- `"id":int` Deletes bills based on bill ids
 
 **Response**
 
 - `404 Not Found` if the bill does not exist for that user
+- `401 Unauthorized` if the user is not authorized for this request
 - `204 No Content` if the bill is deleted
 
 ## Delete a pay period expense
 
 **Definition**
 
-`DELETE /ppe/<id>`
+`DELETE /ppe`
 
 **Arguments**
 
-- `"user_id":int` id of the user looking to remove pay period expense
-- `"id":int` id of the bill
+- `"id":int` Deletes pay period expenses based on pay period expenses ids
 
 **Response**
 
 - `404 Not Found` if the pay period expense does not exist for that user
+- `401 Unauthorized` if the user is not authorized for this request
 - `204 No Content` if the pay period expense is deleted
+
+## Update users
+
+**Definition**
+
+`PUT /users/<id>`
+
+**Arguments**
+
+- `"email":string` optional. Update the email of the user
+- `"password_hash:string"` optional. Update the user's password hash
+- `"starting_pay_date:string"` optional. Update the last paid date in "MM-DD-YYYY" format
+- `"pay_frequency:int"` optional. Update how often the user gets paid in days
+- `"pay_dates:int"` optional. Update dates the user gets paid every month
+
+**Response**
+
+- `404 Not Found` if the user is not found
+- `401 Unauthorized` if the user is not authorized for this request
+- `200 OK` on success
+
+## Update bill
+
+**Definition**
+
+`PUT /bills/<id>`
+
+**Arguments**
+
+- `"name":string` optional. Change the name of the company you pay the bill to
+- `"cost:float"` optional. Change how much the bill costs per month
+- `"category:string"` optional. Change the category
+
+**Response**
+
+- `404 Not Found` if the bill is not found
+- `401 Unauthorized` if the user is not authorized for this request
+- `200 OK` on success
+
+## Update pay period expense
+
+**Definition**
+
+`PUT /ppe/<id>`
+
+**Arguments**
+
+- `"name":string` optional. Change the name of the company you pay the bill to
+- `"cost:float"` optional. Change how much the bill costs per month
+- `"due_date:int"` optional. Change what day per month the bill falls on. Choose this or frequency
+- `"frequency:int"` optional. Change how many days until the next bill is due
+- `"last_paid:string"` optional. Change date when the last bill was paid in "MM-DD-YYYY" format
+- `"category:string"` optional. Change the category
+
+**Response**
+
+- `404 Not Found` if the pay period expense is not found
+- `401 Unauthorized` if the user is not authorized for this request
+- `200 OK` on success
+
+## Get budget schedule
+
+**Definition**
+
+`GET /budgetschedule`
+
+**Arguments**
+
+- `"user_id":int` returns a list of expenses in the pay periods. Default is 24
+- `"count":int` optional. Amount of pay periods to return. Max 48
+
+**Response**
+
+- `404 Not Found` if the user id is not found
+- `401 Unauthorized` if the user is not authorized for this request
+- `400 Bad Request` if the arguments of count is above 48
+- `200 OK` on success
+
+``` json
+[
+  {
+    "pay_date": "05/08/2020",
+    "end_pay_date": "05/21/2020",
+    "pay_period_expenses":
+    [
+      {
+        "id": 3,
+        "name": "Groceries",
+        "cost": "250",
+        "category": "food"
+      },
+      {
+        "id": 5,
+        "name": "Gas",
+        "cost": "40.00",
+        "category": "automotive"
+      }
+    ],
+    "bills":
+    [
+      {
+        "id": 6,
+        "name": "National Grid",
+        "cost": "43.47",
+        "due_date": 0,
+        "frequency": 30,
+        "last_paid": "03-07-2020",
+        "category": "utilities"
+      },
+      {
+        "id": 12,
+        "name": "Spectrum",
+        "cost": "49.99",
+        "due_date": 7,
+        "frequency": 30,
+        "last_paid": "03-14-2020",    
+        "category": "utilities"
+      }
+    ]
+  },
+  {
+    "pay_date": "05/22/2020",
+    "end_pay_date": "06/04/2020",
+    "pay_period_expenses":
+    [
+      {
+        "id": 3,
+        "name": "Groceries",
+        "cost": "250",
+        "category": "food"
+      },
+      {
+        "id": 5,
+        "name": "Gas",
+        "cost": "40.00",
+        "category": "automotive"
+      }
+    ],
+    "bills":
+    [
+      {
+        "id": 13,
+        "name": "Netlfix",
+        "cost": "13.99",
+        "due_date": 27,
+        "frequency": 0,
+        "last_paid": "04-27-2020",
+        "category": "entertainment"
+      },
+      {
+        "id": 14,
+        "name": "Spotify",
+        "cost": "49.99",
+        "due_date": 1,
+        "frequency": 0,
+        "last_paid": "04-01-2020",    
+        "category": "entertainment"
+      }
+    ]
+  }
+]
+```
