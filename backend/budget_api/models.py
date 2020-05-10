@@ -94,7 +94,6 @@ class Database:
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
-        print("id" in args[0])
         if (args == ()):
             sql = '''SELECT * FROM users'''
             cur.execute(sql)
