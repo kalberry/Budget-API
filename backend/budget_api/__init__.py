@@ -14,7 +14,7 @@ db.create_tables()
 
 @app.route("/")
 def index():
-
+    db.get_bills({"user_id": 5})
 
     with open(os.path.dirname(app.root_path) + '/README.md', 'r') as markdown_file:
         content = markdown_file.read()
@@ -29,9 +29,18 @@ class User(Resource):
         args = parser.parse_args()
 
         if (args['id']):
-            return {"message": "Getting user data for " + args['id'] + "."}, 200
+            user = db.get_users(args['id'])
+            if (user is not None):
+                return {"message": "User retrieved", "data": db.get_users(args['id'])}, 200
+            else:
+                return {"message": "User not found"}, 404
 
-        return {"message": "Getting all users."}, 200
+        users = db.get_users()
+        print(users)
+        if (users):
+            return {"message": "Retrieved all users.", "data": users}, 200
+        else:
+            return {"message": "Count not find user"}, 404
 
     def put(self):
         parser = reqparse.RequestParser()
@@ -154,6 +163,26 @@ class PayPeriodExpense(Resource):
 
         return {"message": "Deleting pay period expense with id " + args['id']}
 
+class Register(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+
+        parser.add_argument('email', required=True)
+        parser.add_argument('password_hash', required=True)
+        parser.add_argument('starting_pay_date', required=True)
+        parser.add_argument('pay_frequency')
+        parser.add_argument('pay_dates', action='append')
+
+        args = parser.parse_args()
+
+        #db.register_user
+
+class Login(Resource):
+    def post(self):
+        pass
+
 api.add_resource(User, '/users')
 api.add_resource(Bill, '/bills')
 api.add_resource(PayPeriodExpense, '/ppe')
+api.add_resource(Register, '/auth/register')
+api.add_resource(Login, '/auth/login')
