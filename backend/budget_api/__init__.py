@@ -29,9 +29,9 @@ class User(Resource):
         args = parser.parse_args()
 
         if (args['id']):
-            user = db.get_users(args['id'])
-            if (user is not None):
-                return {"message": "User retrieved", "data": db.get_users(args['id'])}, 200
+            user = db.get_users({"id": args['id']})
+            if (user != []):
+                return {"message": "User retrieved", "data": user}, 200
             else:
                 return {"message": "User not found"}, 404
 
@@ -175,7 +175,19 @@ class Register(Resource):
 
         args = parser.parse_args()
 
-        #db.register_user
+        email = args['email']
+        password_hash = args['password_hash']
+        # TODO - Last pay date instead of starting?
+        starting_pay_date = args['starting_pay_date']
+        pay_frequency = args['pay_frequency']
+        pay_dates = args['pay_dates']
+
+        user = db.register_user(email, password_hash, starting_pay_date, pay_frequency, pay_dates)
+
+        if user != {}:
+            return {"message": "User registered", "data": user}, 201
+        else:
+            return{"message": "User failed to register"}
 
 class Login(Resource):
     def post(self):

@@ -94,6 +94,7 @@ class Database:
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
+        print("id" in args[0])
         if (args == ()):
             sql = '''SELECT * FROM users'''
             cur.execute(sql)
@@ -103,23 +104,37 @@ class Database:
             cur.execute(sql, data)
 
         users = self.cursor_to_user(cur)
-        for user in users:
-            sql = '''SELECT * FROM bills WHERE user_id=%s'''
-            data = (user['id'], )
-            cur.execute(sql, data)
-            user['bills'] = self.cursor_to_bills(cur)
-
-            sql = '''SELECT * FROM pay_period_expenses WHERE user_id=%s'''
-            data = user['id']
-            data = (user['id'], )
-            cur.execute(sql, data)
-            user['pay_period_expenses'] = self.cursor_to_pay_period_expenses(cur)
 
         return users
 
-    def register_user(self, *args, **kwargs):
+    def register_user(self, email, password_hash, starting_pay_date, pay_frequency, pay_dates):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
+        self.email = email
+        self.password_hash = password_hash
+        self.starting_pay_date = starting_pay_date
+        self.pay_frequency = pay_frequency
+        self.pay_dates = pay_dates
+
+        sql = '''SELECT * FROM users WHERE email=%s LIMIT 1'''
+        data = (email, )
+        cur.execute(sql, data)
+
+        user = self.cursor_to_user(cur)
+
+        print(user)
+        if (user != []):
+            return {}
+        else:
+            sql = '''INSERT INTO users (email, password_hash, starting_pay_date, pay_frequency, pay_dates) VALUES (%s, %s, %s, %s, %s); '''
+            data = (email, password_hash, starting_pay_date, pay_frequency, str(pay_dates))
+            cur.execute(sql, data)
+            con.commit()
+            sql = '''SELECT * FROM users WHERE email=%s LIMIT 1;'''
+            data = (email, )
+            cur.execute(sql, data)
+            user = self.cursor_to_user(cur)
+            return user
 
     def cursor_to_pay_period_expenses(self, cur):
         ppe = []
@@ -136,14 +151,24 @@ class Database:
     def cursor_to_user(self, cur):
         users = []
         for (id, email, password_hash, starting_pay_date, pay_frequency, pay_dates) in cur:
+            sql = '''SELECT * FROM bills WHERE user_id=%s'''
+            data = (id, )
+            cur.execute(sql, data)
+            bills = self.cursor_to_bills(cur)
+
+            sql = '''SELECT * FROM pay_period_expenses WHERE user_id=%s'''
+            data = (id, )
+            cur.execute(sql, data)
+            pay_period_expenses = self.cursor_to_pay_period_expenses(cur)
+
             users.append({
             "id": id,
             "email": email,
             "starting_pay_date": starting_pay_date,
             "pay_frequency": pay_frequency,
             "pay_dates": pay_dates,
-            "bills": [],
-            "pay_period_expenses": []
+            "bills": bills,
+            "pay_period_expenses": pay_period_expenses
             })
         return users
 
