@@ -15,10 +15,88 @@ The responses will have the form
 ```
 
 ## API
+
+## **Users**
+
+### Create new user
+**Definition**
+
+`POST /api/v1/auth/register`
+
+**Arguments**
+
+- `"email":string` email of the user
+- `"password_hash:string"` user's password hash
+- `"last_pay_date:string"` Last paid date in "MM-DD-YYYY" format
+- `"pay_frequency:int"` How often the user gets paid in days
+- `"pay_dates:int"` Dates the user gets paid every month
+
+**Response**
+
+- `401 Unauthorized` if the user is not authorized for this request
+- `201 Created` on success
+
+``` json
+{
+  "id": 4,
+  "email": "janedoe@email.com",
+  "last_pay_date": "03/02/2020",
+  "pay_frequency": 14,
+  "pay_dates": [0]
+}
+```
+
+### Login user
+**Definition**
+
+`POST /api/v1/auth/login`
+
+**Arguments**
+
+- `"email":string` email of the user
+- `"password_hash:string"` user's password hash
+
+**Response**
+
+- `404 Not Found` if email or password is invalid
+- `401 Unauthorized` if the user is not authorized for this request
+- `200 OK` on success
+
+``` json
+{
+  "id": 4,
+  "email": "janedoe@email.com",
+  "last_pay_date": "03/02/2020",
+  "pay_frequency": 14,
+  "pay_dates": [0]
+}
+```
+
+## Update users
+
+**Definition**
+
+`PUT /api/v1/users`
+
+**Arguments**
+
+- `"id":int` id of the user
+- `"email":string` optional. Update the email of the user
+- `"password_hash:string"` optional. Update the user's password hash
+- `"last_pay_date:string"` optional. Update the last paid date in "MM-DD-YYYY" format
+- `"pay_frequency:int"` optional. Update how often the user gets paid in days
+- `"pay_dates:int"` optional. Update dates the user gets paid every month
+
+**Response**
+
+- `404 Not Found` if the user is not found
+- `401 Unauthorized` if the user is not authorized for this request
+- `200 OK` on success
+
 ### Get all user data
 **Definition**
 
-`GET /users`
+`GET /api/v1/users`
 
 **Arguments**
 
@@ -35,7 +113,7 @@ The responses will have the form
   {
     "id": 4,
     "email": "janedoe@email.com",
-    "starting_pay_date": "03/02/2020",
+    "last_pay_date": "03/02/2020",
     "pay_frequency": 14,
     "pay_dates": [0],
     "bills":
@@ -78,7 +156,7 @@ The responses will have the form
   {
     "id": 5,
     "email": "johndoe@email.com",
-    "starting_pay_date": "02/25/2020",
+    "last_pay_date": "02/25/2020",
     "pay_frequency": 0,
     "pay_dates": [1,15],
     "bills":
@@ -121,64 +199,12 @@ The responses will have the form
 ]
 ```
 
-### Create new user
-**Definition**
-
-`POST /auth/register`
-
-**Arguments**
-
-- `"email":string` email of the user
-- `"password_hash:string"` user's password hash
-- `"starting_pay_date:string"` Last paid date in "MM-DD-YYYY" format
-- `"pay_frequency:int"` How often the user gets paid in days
-- `"pay_dates:int"` Dates the user gets paid every month
-
-**Response**
-
-- `401 Unauthorized` if the user is not authorized for this request
-- `201 Created` on success
-
-``` json
-{
-  "id": 4,
-  "email": "janedoe@email.com",
-  "starting_pay_date": "03/02/2020",
-  "pay_frequency": 14,
-  "pay_dates": [0]
-}
-```
-
-### Login user
-**Definition**
-
-`POST /auth/login`
-
-**Arguments**
-
-- `"email":string` email of the user
-- `"password_hash:string"` user's password hash
-
-**Response**
-
-- `404 Not Found` if email or password is invalid
-- `401 Unauthorized` if the user is not authorized for this request
-- `200 OK` on success
-
-``` json
-{
-  "id": 4,
-  "email": "janedoe@email.com",
-  "starting_pay_date": "03/02/2020",
-  "pay_frequency": 14,
-  "pay_dates": [0]
-}
-```
+## **Bills**
 
 ### Add new bills
 **Definition**
 
-`POST /bills`
+`POST /api/v1/bills`
 
 **Arguments**
 
@@ -208,36 +234,10 @@ The responses will have the form
 }
 ```
 
-### Add new pay period expenses
-**Definition**
-
-`POST /ppe`
-
-**Arguments**
-
-- `"user_id":int` id of the user adding to pay period expenses
-- `"name":string` name of pay period expense
-- `"cost:float"` how much the pay period expense costs
-- `"category:string"` optional. If the user wants to put it in a specific category
-
-**Response**
-
-- `401 Unauthorized` if the user is not authorized for this request
-- `201 Created` on success
-
-```json
-{
-  "id": 6,
-  "name": "National Grid",
-  "cost": "43.47",
-  "category": "utilities"
-}
-```
-
 ## Lookup all bills
 **Definition**
 
-`GET /bills`
+`GET /api/v1/bills`
 
 **Arguments**
 
@@ -274,10 +274,90 @@ The responses will have the form
   }
 ]
 ```
+
+## Update bill
+
+**Definition**
+
+`PUT /api/v1/bills`
+
+**Arguments**
+
+- `"id":int` id of the bill
+- `"name":string` optional. Change the name of the company you pay the bill to
+- `"cost:float"` optional. Change how much the bill costs per month
+- `"category:string"` optional. Change the category
+
+**Response**
+
+- `404 Not Found` if the bill is not found
+- `401 Unauthorized` if the user is not authorized for this request
+- `200 OK` on success
+
+## Delete a bill
+
+**Definition**
+
+`DELETE /api/v1/bills`
+
+**Arguments**
+
+- `"id":int` Deletes bills based on bill ids
+
+**Response**
+
+- `404 Not Found` if the bill does not exist for that user
+- `401 Unauthorized` if the user is not authorized for this request
+- `204 No Content` if the bill is deleted
+
+## **Pay Period Expenses**
+
+### Add new pay period expenses
+**Definition**
+
+`POST /api/v1/ppe`
+
+**Arguments**
+
+- `"user_id":int` id of the user adding to pay period expenses
+- `"name":string` name of pay period expense
+- `"cost:float"` how much the pay period expense costs
+- `"category:string"` optional. If the user wants to put it in a specific category
+
+**Response**
+
+- `401 Unauthorized` if the user is not authorized for this request
+- `201 Created` on success
+
+```json
+{
+  "id": 6,
+  "name": "National Grid",
+  "cost": "43.47",
+  "category": "utilities"
+}
+```
+
+## Delete a pay period expense
+
+**Definition**
+
+`DELETE /api/v1/ppe`
+
+**Arguments**
+
+- `"id":int` Deletes pay period expenses based on pay period expenses ids
+
+**Response**
+
+- `404 Not Found` if the pay period expense does not exist for that user
+- `401 Unauthorized` if the user is not authorized for this request
+- `204 No Content` if the pay period expense is deleted
+
 ## Lookup pay period expense details
 **Definition**
 
-`GET /ppe`
+`GET /api/v1/ppe`
 
 **Arguments**
 
@@ -309,83 +389,11 @@ The responses will have the form
 
 ```
 
-## Delete a bill
-
-**Definition**
-
-`DELETE /bills`
-
-**Arguments**
-
-- `"id":int` Deletes bills based on bill ids
-
-**Response**
-
-- `404 Not Found` if the bill does not exist for that user
-- `401 Unauthorized` if the user is not authorized for this request
-- `204 No Content` if the bill is deleted
-
-## Delete a pay period expense
-
-**Definition**
-
-`DELETE /ppe`
-
-**Arguments**
-
-- `"id":int` Deletes pay period expenses based on pay period expenses ids
-
-**Response**
-
-- `404 Not Found` if the pay period expense does not exist for that user
-- `401 Unauthorized` if the user is not authorized for this request
-- `204 No Content` if the pay period expense is deleted
-
-## Update users
-
-**Definition**
-
-`PUT /users`
-
-**Arguments**
-
-- `"id":int` id of the user
-- `"email":string` optional. Update the email of the user
-- `"password_hash:string"` optional. Update the user's password hash
-- `"starting_pay_date:string"` optional. Update the last paid date in "MM-DD-YYYY" format
-- `"pay_frequency:int"` optional. Update how often the user gets paid in days
-- `"pay_dates:int"` optional. Update dates the user gets paid every month
-
-**Response**
-
-- `404 Not Found` if the user is not found
-- `401 Unauthorized` if the user is not authorized for this request
-- `200 OK` on success
-
-## Update bill
-
-**Definition**
-
-`PUT /bills`
-
-**Arguments**
-
-- `"id":int` id of the bill
-- `"name":string` optional. Change the name of the company you pay the bill to
-- `"cost:float"` optional. Change how much the bill costs per month
-- `"category:string"` optional. Change the category
-
-**Response**
-
-- `404 Not Found` if the bill is not found
-- `401 Unauthorized` if the user is not authorized for this request
-- `200 OK` on success
-
 ## Update pay period expense
 
 **Definition**
 
-`PUT /ppe/<id>`
+`PUT /api/v1/ppe/<id>`
 
 **Arguments**
 
@@ -402,11 +410,13 @@ The responses will have the form
 - `401 Unauthorized` if the user is not authorized for this request
 - `200 OK` on success
 
+## **Budget Schedule**
+
 ## Get budget schedule
 
 **Definition**
 
-`GET /budgetschedule`
+`GET /api/v1/budgetschedule`
 
 **Arguments**
 

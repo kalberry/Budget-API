@@ -12,10 +12,8 @@ db = models.Database()
 app.config['SECRET_KEY'] = 'applesauce'
 db.create_tables()
 
-@app.route("/")
+@app.route("/api/v1")
 def index():
-    db.get_bills({"user_id": 5})
-
     with open(os.path.dirname(app.root_path) + '/README.md', 'r') as markdown_file:
         content = markdown_file.read()
 
@@ -36,7 +34,6 @@ class User(Resource):
                 return {"message": "User not found"}, 404
 
         users = db.get_users()
-        print(users)
         if (users):
             return {"message": "Retrieved all users.", "data": users}, 200
         else:
@@ -48,7 +45,7 @@ class User(Resource):
         parser.add_argument('id', required=True)
         parser.add_argument('email')
         parser.add_argument('password_hash')
-        parser.add_argument('starting_pay_date')
+        parser.add_argument('last_pay_date')
         parser.add_argument('pay_frequency')
         parser.add_argument('pay_dates', action='append')
 
@@ -56,36 +53,45 @@ class User(Resource):
 
         message = 'For ' + str(args['id']) + " we "
         if (args['email']):
+            db.update_user({"email": args['email'], "id": args['id']})
             message += 'updated email. '
         if (args['password_hash']):
+            db.update_user({"password_hash": args['password_hash'], "id": args['id']})
             message += 'updated password. '
-        if (args['starting_pay_date']):
+        if (args['last_pay_date']):
+            db.update_user({"last_pay_date": args['last_pay_date'], "id": args['id']})
             message += 'updated starting pay date. '
+        # TODO - Eventually make sure they can either have pay_freq or pay_dates
         if (args['pay_frequency']):
+            db.update_user({"pay_frequency": args['pay_frequency'], "id": args['id']})
             message += 'updated pay frequency. '
         if (args['pay_dates']):
+            db.update_user({"pay_dates": args['pay_dates'], "id": args['id']})
             message += 'updated pay dates. '
 
-        return {"message": message}, 200
-
+        user = db.get_users({"id": args['id']})
+        if (user):
+            return {"message": message}, 200
+        else:
+            return {"message": "Failed to update user"}, 404
 
 class Bill(Resource):
     def get(self):
         parser = reqparse.RequestParser()
 
         parser.add_argument('user_id')
-        parser.add_argument('id')
+        parser.add_argument('id', action='append')
 
         args = parser.parse_args()
 
-        #db.get_bills()
-
         if (args['user_id'] and args['id']):
             return {"message": "Bad Request"}, 400
-        if (args['user_id'] and not args['id']):
-            return {"message": "Getting bills for user " + args['user_id']}, 200
+        elif (args['user_id'] and not args['id']):
+            user = db.get_bills({"user_id": args['user_id']})
+            return {"message": "Received bills successfully", "data": user}, 200
         elif (not args['user_id'] and args['id']):
-            return {"message": "Getting bill with id " + args['id']}, 200
+            bill = db.get_bills({"id": args['id']})
+            return {"message": "Received bill successfully", "data": bill}, 200
 
         return {"message": "Getting all bills", "data": db.get_bills()}, 200
 
@@ -169,7 +175,7 @@ class Register(Resource):
 
         parser.add_argument('email', required=True)
         parser.add_argument('password_hash', required=True)
-        parser.add_argument('starting_pay_date', required=True)
+        parser.add_argument('last_pay_date', required=True)
         parser.add_argument('pay_frequency')
         parser.add_argument('pay_dates', action='append')
 
@@ -178,23 +184,35 @@ class Register(Resource):
         email = args['email']
         password_hash = args['password_hash']
         # TODO - Last pay date instead of starting?
-        starting_pay_date = args['starting_pay_date']
+        last_pay_date = args['last_pay_date']
         pay_frequency = args['pay_frequency']
         pay_dates = args['pay_dates']
 
-        user = db.register_user(email, password_hash, starting_pay_date, pay_frequency, pay_dates)
+        user = db.register_user(email, password_hash, last_pay_date, pay_frequency, pay_dates)
 
         if user != {}:
             return {"message": "User registered", "data": user}, 201
         else:
-            return{"message": "User failed to register"}
+            return{"message": "User failed to register"}, 404
 
 class Login(Resource):
     def post(self):
-        pass
+        parser = reqparse.RequestParser()
 
-api.add_resource(User, '/users')
-api.add_resource(Bill, '/bills')
-api.add_resource(PayPeriodExpense, '/ppe')
-api.add_resource(Register, '/auth/register')
-api.add_resource(Login, '/auth/login')
+        parser.add_argument('email', required=True)
+        parser.add_argument('password_hash', required=True)
+
+        args = parser.parse_args()
+
+        user = db.login_user(args['email'], args['password_hash'])
+
+        if user != {}:
+            return {"message": "User logged in", "data": user}, 200
+        else:
+            return{"message": "User failed to register"}, 404
+
+api.add_resource(User, '/api/v1/users')
+api.add_resource(Bill, '/api/v1/bills')
+api.add_resource(PayPeriodExpense, '/api/v1/ppe')
+api.add_resource(Register, '/api/v1/auth/register')
+api.add_resource(Login, '/api/v1/auth/login')
