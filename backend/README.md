@@ -329,15 +329,6 @@ The responses will have the form
 - `401 Unauthorized` if the user is not authorized for this request
 - `201 Created` on success
 
-```json
-{
-  "id": 6,
-  "name": "National Grid",
-  "cost": "43.47",
-  "category": "utilities"
-}
-```
-
 ## Delete a pay period expense
 
 **Definition**
@@ -397,12 +388,9 @@ The responses will have the form
 
 **Arguments**
 
-- `"name":string` optional. Change the name of the company you pay the bill to
-- `"cost:float"` optional. Change how much the bill costs per month
-- `"due_date:int"` optional. Change what day per month the bill falls on. Choose this or frequency
-- `"frequency:int"` optional. Change how many days until the next bill is due
-- `"last_paid:string"` optional. Change date when the last bill was paid in "MM-DD-YYYY" format
-- `"category:string"` optional. Change the category
+- `"name":string` optional. Change the name of the company you pay the pay period expense to
+- `"cost":float` optional. Change how much the pay period expense costs per month
+- `"category":string` optional. Change the category
 
 **Response**
 

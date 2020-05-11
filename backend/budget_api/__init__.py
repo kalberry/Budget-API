@@ -75,12 +75,25 @@ class User(Resource):
         else:
             return {"message": "Failed to update user"}, 404
 
+    def delete(self):
+        parser = reqparse.RequestParser()
+
+        parser.add_argument('id', required=True)
+
+        args = parser.parse_args()
+        print(args['id'])
+
+        db.delete_user(args['id'])
+
+        return 204
+
 class Bill(Resource):
     def get(self):
         parser = reqparse.RequestParser()
 
         parser.add_argument('user_id')
         parser.add_argument('id', action='append')
+        parser.add_argument('category')
 
         args = parser.parse_args()
 
@@ -90,7 +103,7 @@ class Bill(Resource):
             user = db.get_bills({"user_id": args['user_id']})
             return {"message": "Received bills successfully", "data": user}, 200
         elif (not args['user_id'] and args['id']):
-            bill = db.get_bills({"id": args['id']})
+            bill = db.get_bills(id=args['id'])
             return {"message": "Received bill successfully", "data": bill}, 200
 
         return {"message": "Getting all bills", "data": db.get_bills()}, 200
@@ -127,26 +140,32 @@ class Bill(Resource):
         parser.add_argument('id', required=True)
 
         args = parser.parse_args()
+        print(args['id'])
 
-        return {"message": "Deleting bill with id " + args['id']}
+        db.delete_bill(args['id'])
+
+        return 204
 
 class PayPeriodExpense(Resource):
     def get(self):
         parser = reqparse.RequestParser()
 
         parser.add_argument('user_id')
-        parser.add_argument('id')
+        parser.add_argument('id', action='append')
 
         args = parser.parse_args()
 
         if (args['user_id'] and args['id']):
-            return {"message": "Bad Request"}, 400
-        if (args['user_id'] and not args['id']):
-            return {"message": "Getting pay period expenses for user " + args['user_id']}, 200
+            ppe = db.get_pay_period_expenses(user_id=args['user_id'], id=args['id'])
+        elif (args['user_id'] and not args['id']):
+            ppe = db.get_pay_period_expenses(user_id=args['user_id'])
         elif (not args['user_id'] and args['id']):
-            return {"message": "Getting pay period expense with id " + args['id']}, 200
+            ppe = db.get_pay_period_expenses(id=args['id'])
 
-        return {"message": "Getting all pay period expenses"}, 200
+        if ppe != None and ppe != []:
+            return {"message": "Recieved pay period expense request", "data": ppe}, 200
+        else:
+            return 404
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -158,7 +177,13 @@ class PayPeriodExpense(Resource):
 
         args = parser.parse_args()
 
-        return {"message": "Pay period expense " + args['name'] + " for " + args['user_id'] + " costing " + args['cost']}, 201
+        if args['category'] is not None:
+            db.add_pay_period_expense(name=args['name'], cost=args['cost'], user_id=args['user_id'], category=args['category'])
+            db.get_pay_period_expenses()
+        else:
+            db.add_pay_period_expense(name=args['name'], cost=args['cost'], user_id=args['user_id'])
+
+        return {"message": "Pay period expense added successfully"}, 201
 
     def delete(self):
         parser = reqparse.RequestParser()
@@ -167,7 +192,33 @@ class PayPeriodExpense(Resource):
 
         args = parser.parse_args()
 
-        return {"message": "Deleting pay period expense with id " + args['id']}
+        db.delete_pay_period_expense(args['id'])
+
+        return 204
+
+    def put(self):
+        parser = reqparse.RequestParser()
+
+        parser.add_argument('id', required=True)
+        parser.add_argument('name')
+        parser.add_argument('cost')
+        parser.add_argument('category')
+
+        args = parser.parse_args()
+
+        id = args['id']
+        name = args['name']
+        cost = args['cost']
+        category = args['category']
+
+        if name:
+            db.update_pay_period_expense(id=id, name=name)
+        if cost:
+            db.update_pay_period_expense(id=id, cost=cost)
+        if category:
+            db.update_pay_period_expense(id=id, category=category)
+
+        return {"message": "Pay period updated."}, 200
 
 class Register(Resource):
     def post(self):
@@ -183,7 +234,6 @@ class Register(Resource):
 
         email = args['email']
         password_hash = args['password_hash']
-        # TODO - Last pay date instead of starting?
         last_pay_date = args['last_pay_date']
         pay_frequency = args['pay_frequency']
         pay_dates = args['pay_dates']
@@ -211,8 +261,20 @@ class Login(Resource):
         else:
             return{"message": "User failed to register"}, 404
 
+class BudgetSchedule(Resource):
+    def get(self):
+        parser = reqparse.RequestParser()
+
+        parser.add_argument('id', required=True)
+
+        args = parser.parse_args()
+        id = args['id']
+
+        db.get_budget_schedule(user_id=id)
+
 api.add_resource(User, '/api/v1/users')
 api.add_resource(Bill, '/api/v1/bills')
 api.add_resource(PayPeriodExpense, '/api/v1/ppe')
 api.add_resource(Register, '/api/v1/auth/register')
 api.add_resource(Login, '/api/v1/auth/login')
+api.add_resource(BudgetSchedule, '/api/v1/budget-schedule')
