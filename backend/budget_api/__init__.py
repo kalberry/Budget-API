@@ -97,14 +97,22 @@ class Bill(Resource):
 
         args = parser.parse_args()
 
+        print(args['id'])
+
         if (args['user_id'] and args['id']):
             return {"message": "Bad Request"}, 400
         elif (args['user_id'] and not args['id']):
             user = db.get_bills({"user_id": args['user_id']})
             return {"message": "Received bills successfully", "data": user}, 200
         elif (not args['user_id'] and args['id']):
-            bill = db.get_bills(id=args['id'])
-            return {"message": "Received bill successfully", "data": bill}, 200
+            if len(args['id']) > 1:
+                bills = []
+                for i in args['id']:
+                    bills.append(db.get_bills(id=i)[0])
+                return {"message": "Received bill successfully", "data": bills}, 200
+            else:
+                bill = db.get_bills(id=args['id'][0])
+                return {"message": "Received bill successfully", "data": bill}, 200
 
         return {"message": "Getting all bills", "data": db.get_bills()}, 200
 
@@ -270,7 +278,11 @@ class BudgetSchedule(Resource):
         args = parser.parse_args()
         id = args['id']
 
-        db.get_budget_schedule(user_id=id)
+        budget_schedule =  db.get_budget_schedule(user_id=id)
+        if (budget_schedule != []):
+            return {"message": "Budget Schedule recieved", "data": budget_schedule}, 200
+        else:
+            return {"message": "Budget Schedule not recieved"}, 404
 
 api.add_resource(User, '/api/v1/users')
 api.add_resource(Bill, '/api/v1/bills')

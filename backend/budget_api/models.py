@@ -70,180 +70,85 @@ class Database:
         cur.close()
         con.close()
 
-    def get_bill_by_id(self, id):
+    def get_bills(self, id=None, user_id=None):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
-        sql = '''SELECT * FROM bills WHERE id=%s'''
-        data = (id, user_id)
-        cur.execute(sql, data)
-        bills.append(self.cursor_to_bills(cur))
-
-        con.close()
-        cur.close()
-
-    def get_bills(self, id=[], user_id=None, start=None, end=None, frequency=False):
-        bills = []
-        con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
-        cur = con.cursor()
-
-        # if id and user_id input
-        if id and user_id:
-            # and there is more than one id
-            if len(id) > 1:
-                # if there is a start and end due date
-                if start and end:
-                    for i in id:
-                        sql = '''SELECT * FROM bills WHERE id=%s AND user_id=%s AND due_date BETWEEN %s AND %s '''
-                        data = (id, user_id, start, end)
-                        cur.execute(sql, data)
-                        bills.append(self.cursor_to_bills(cur))
-                # if there is not start and end date
-                else:
-                    for i in id:
-                        sql = '''SELECT * FROM bills WHERE id=%s AND user_id=%s'''
-                        data = (id, user_id)
-                        cur.execute(sql, data)
-                        bills.append(self.cursor_to_bills(cur))
-            else:
-                # if there is a start and end due date
-                if start and end:
-                    sql = '''SELECT * FROM bills WHERE id=%s AND user_id=%s AND due_date BETWEEN %s AND %s '''
-                    data = (id, user_id, start, end)
-                    cur.execute(sql, data)
-                    bills.append(self.cursor_to_bills(cur))
-                # if there is not start and end date
-                else:
-                    sql = '''SELECT * FROM bills WHERE id=%s AND user_id=%s'''
-                    data = (id, user_id)
-                    cur.execute(sql, data)
-                    bills.append(self.cursor_to_bills(cur))
-
-            if frequency == True:
-                sql = '''SELECT * FROM bills WHERE id=%s AND user_id=%s AND frequency IS NOT NULL '''
-                data = (id, user_id)
-                cur.execute(sql, data)
-                bills.append(self.cursor_to_bills(cur))
-
-            cur.close()
+        if id and not user_id:
+            sql = '''SELECT * FROM bills WHERE id=%s'''
+            data = (id,)
+            cur.execute(sql, data)
+            bill = self.cursor_to_bills(cur)
             con.close()
-            return bills
-
-        elif (id and not user_id):
-            if len(id) > 1:
-                if start and end:
-                    for i in id:
-                        sql = '''SELECT * FROM bills WHERE id=%s AND due_date BETWEEN %s AND %s '''
-                        data = (id, start, end)
-                        cur.execute(sql, data)
-                        bills.append(self.cursor_to_bills(cur))
-                else:
-                    for i in id:
-                        sql = '''SELECT * FROM bills WHERE id=%s'''
-                        data = (id)
-                        cur.execute(sql, data)
-                        bills.append(self.cursor_to_bills(cur))
-                        print(bills)
-            else:
-                if start and end:
-                    sql = '''SELECT * FROM bills WHERE id=%s AND due_date BETWEEN %s AND %s '''
-                    data = (id, start, end)
-                    cur.execute(sql, data)
-                    bills.append(self.cursor_to_bills(cur))
-                else:
-                    sql = '''SELECT * FROM bills WHERE id=%s'''
-                    data = (id)
-                    cur.execute(sql, data)
-                    bills.append(self.cursor_to_bills(cur))
-            if frequency == True:
-                sql = '''SELECT * FROM bills WHERE id=%s AND frequency IS NOT NULL '''
-                data = (id, user_id)
-                cur.execute(sql, data)
-                bills.append(self.cursor_to_bills(cur))
-
             cur.close()
+            return bill
+        elif not id and user_id:
+            sql = '''SELECT * FROM bills WHERE user_id=%s'''
+            data = (user_id,)
+            cur.execute(sql, data)
+            bill = self.cursor_to_bills(cur)
             con.close()
-            return bills
-        elif (not id and user_id):
-            if start and end:
-                sql = '''SELECT * FROM bills WHERE user_id=%s AND due_date BETWEEN %s AND %s '''
-                data = (id, start, end)
-                cur.execute(sql, data)
-                bills.append(self.cursor_to_bills(cur))
-            else:
-                sql = '''SELECT * FROM bills WHERE user_id=%s'''
-                data = (id, user_id)
-                cur.execute(sql, data)
-                bills.append(self.cursor_to_bills(cur))
-            if frequency == True:
-                sql = '''SELECT * FROM bills WHERE user_id=%s AND frequency IS NOT NULL '''
-                data = (id, user_id)
-                cur.execute(sql, data)
-                bills.append(self.cursor_to_bills(cur))
-
             cur.close()
+            return bill
+        elif id and user_id:
+            sql = '''SELECT * FROM bills WHERE id=%s AND user_id=%s'''
+            data = (id, user_id)
+            cur.execute(sql, data)
+            bill = self.cursor_to_bills(cur)
             con.close()
-            return bills
+            cur.close()
+            return bill
         else:
             sql = '''SELECT * FROM bills'''
-            cur.execute(sql)
-            bills.append(self.cursor_to_bills(cur))
-
-            cur.close()
+            cur.execute(sql, data)
+            bill = self.cursor_to_bills(cur)
             con.close()
-            return bills
+            cur.close()
+            return bill
 
-        # if (args == ()):
-        #     sql = '''SELECT * FROM bills'''
-        #     cur.execute(sql)
-        # elif "user_id" in args[0].keys():
-        #     sql = '''SELECT * FROM bills WHERE user_id = %s'''
-        #     data = (args[0]['user_id'], )
-        #     cur.execute(sql, data)
-        # elif "id" in args[0].keys():
-        #     if len(args[0]['id']) > 1:
-        #         bills = []
-        #         for i in args[0]['id']:
-        #             sql = '''SELECT * FROM bills WHERE id = %s'''
-        #             data = (i, )
-        #             cur.execute(sql, data)
-        #             bills.append(self.cursor_to_bills(cur)[0])
-        #
-        #         cur.close()
-        #         con.close()
-        #         return bills
-        #     else:
-        #         sql = '''SELECT * FROM bills WHERE id = %s'''
-        #         data = (args[0]['id'][0], )
-        #         cur.execute(sql, data)
-        #         bill = self.cursor_to_bills(cur)
-        #
-        #         cur.close()
-        #         con.close()
-        #         return bill
-
-
-
-    def get_users(self, *args, **kwargs):
-        users = []
-
+    def get_bills_by_user_id_range(self, user_id, start, end):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
-        if (args == ()):
-            sql = '''SELECT * FROM users'''
-            cur.execute(sql)
-        elif "id" in args[0].keys():
-            sql = '''SELECT * FROM users WHERE id = %s'''
-            data = (args[0]['id'], )
-            cur.execute(sql, data)
-
-        users = self.cursor_to_user(cur)
-
-        cur.close()
+        sql = '''SELECT * FROM bills WHERE user_id=%s AND due_date BETWEEN %s AND %s'''
+        data = (user_id, start, end)
+        cur.execute(sql, data)
+        bill = self.cursor_to_bills(cur)
         con.close()
+        cur.close()
+        return bill
 
-        return users
+    def get_bills_by_frequency(self, user_id):
+        con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
+        cur = con.cursor()
+
+        sql = '''SELECT * FROM bills WHERE user_id=%s AND frequency IS NOT NULL'''
+        data = (user_id,)
+        cur.execute(sql, data)
+        bill = self.cursor_to_bills(cur)
+        con.close()
+        cur.close()
+        return bill
+
+    def get_users(self, id=None):
+        con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
+        cur = con.cursor()
+
+        if id:
+            sql = '''SELECT * FROM users WHERE id = %s'''
+            data = (id, )
+            cur.execute(sql, data)
+            user = self.cursor_to_user(cur)
+            cur.close()
+            con.close()
+            return user
+        else:
+            sql = '''SELECT * FROM users'''
+            cur.execute(sql,)
+            user = self.cursor_to_user(cur)
+            cur.close()
+            con.close()
+            return user
 
     def register_user(self, email, password_hash, last_pay_date, pay_frequency, pay_dates):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
@@ -295,38 +200,35 @@ class Database:
         con.close()
         return user
 
-    def update_user(self, *args, **kwargs):
+    def update_user(self, id, email=None, password_hash=None, last_pay_date=None, pay_frequency=None, pay_dates=None):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
-        if "email" in args[0].keys():
+        if email:
             sql = '''UPDATE users SET email=%s WHERE id=%s '''
-            data = (args[0]['email'], args[0]['id'])
+            data = (email, id)
             cur.execute(sql, data)
             con.commit()
-        if "password_hash" in args[0].keys():
+        if password_hash:
             sql = '''UPDATE users SET password_hash=%s WHERE id=%s '''
-            data = (args[0]['password_hash'], args[0]['id'])
+            data = (password_hash, id)
             cur.execute(sql, data)
             con.commit()
-        if "last_pay_date" in args[0].keys():
+        if last_pay_date:
             sql = '''UPDATE users SET last_pay_date=%s WHERE id=%s '''
-            data = (args[0]['last_pay_date'], args[0]['id'])
+            data = (last_pay_date, id)
             cur.execute(sql, data)
             con.commit()
-        if "pay_frequency" in args[0].keys():
+        if pay_frequency:
             sql = '''UPDATE users SET pay_frequency=%s WHERE id=%s '''
-            data = (args[0]['pay_frequency'], args[0]['id'])
+            data = (pay_frequency, id)
             cur.execute(sql, data)
             con.commit()
-        if "pay_dates" in args[0].keys():
+        if pay_dates:
             sql = '''UPDATE users SET pay_dates=%s WHERE id=%s '''
-            data = (args[0]['pay_dates'], args[0]['id'])
+            data = (pay_dates, id)
             cur.execute(sql, data)
             con.commit()
-
-        cur.close()
-        con.close()
 
     def delete_bill(self, id):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
@@ -380,62 +282,40 @@ class Database:
         cur.close()
         con.close()
 
-    def get_pay_period_expenses(self, id=[], user_id=None):
+    def get_pay_period_expenses(self, id=None, user_id=None):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
-        ppe_list = []
 
-        if (user_id):
-            if (len(id) > 1):
-                for i in id:
-                    sql = '''SELECT * FROM pay_period_expenses WHERE id=%s AND user_id=%s'''
-                    data = (i, user_id)
-                    cur.execute(sql, data)
-                    ppe_list.append(self.cursor_to_pay_period_expenses(cur))
-                cur.close()
-                con.close()
-                return ppe_list
-            elif len(id) == 1:
-                sql = '''SELECT * FROM pay_period_expenses WHERE id=%s AND user_id=%s'''
-                data = (id, user_id)
-                cur.execute(sql, data)
-                ppe = self.cursor_to_pay_period_expenses(cur)
-                cur.close()
-                con.close()
-                return ppe
-            else:
-                sql = '''SELECT * FROM pay_period_expenses WHERE user_id=%s'''
-                data = (user_id, )
-                cur.execute(sql, data)
-                ppe = self.cursor_to_pay_period_expenses(cur)
-                cur.close()
-                con.close()
-                return ppe
+        if id and not user_id:
+            sql = '''SELECT * FROM pay_period_expenses WHERE id=%s'''
+            data = (id,)
+            cur.execute(sql, data)
+            ppe = self.cursor_to_pay_period_expenses(cur)
+            con.close()
+            cur.close()
+            return ppe
+        elif not id and user_id:
+            sql = '''SELECT * FROM pay_period_expenses WHERE user_id=%s'''
+            data = (user_id,)
+            cur.execute(sql, data)
+            ppe = self.cursor_to_pay_period_expenses(cur)
+            con.close()
+            cur.close()
+            return ppe
+        elif id and user_id:
+            sql = '''SELECT * FROM pay_period_expenses WHERE id=%s AND user_id=%s'''
+            data = (id, user_id)
+            cur.execute(sql, data)
+            ppe = self.cursor_to_pay_period_expenses(cur)
+            con.close()
+            cur.close()
+            return ppe
         else:
-            if (len(id) > 1):
-                for i in id:
-                    sql = '''SELECT * FROM pay_period_expenses WHERE id=%s'''
-                    data = (i,)
-                    cur.execute(sql, data)
-                    ppe_list.append(self.cursor_to_pay_period_expenses(cur))
-                cur.close()
-                con.close()
-                return ppe_list
-            else:
-                sql = '''SELECT * FROM pay_period_expenses WHERE id=%s'''
-                data = (''.join(id),)
-                cur.execute(sql, data)
-                ppe = self.cursor_to_pay_period_expenses(cur)
-                cur.close()
-                con.close()
-                return ppe
-
-        sql = '''SELECT * FROM pay_period_expenses'''
-        cur.execute(sql)
-        ppe = self.cursor_to_pay_period_expenses(cur)
-        cur.close()
-        con.close()
-        return ppe
+            sql = '''SELECT * FROM pay_period_expenses'''
+            cur.execute(sql, data)
+            con.close()
+            cur.close()
+            return self.cursor_to_pay_period_expenses(cur)
 
     def update_pay_period_expense(self, id, name=None, cost=None, category=None):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
@@ -460,18 +340,30 @@ class Database:
         cur.close()
         con.close()
 
-    def get_budget_schedule(self, user_id):
+    def get_budget_schedule(self, user_id, frequency=12):
+        budget_schedule = []
         user_data = self.get_users(id=user_id)[0]
-        user = User(user_data['id'], user_data['email'], None, \
-        user_data['last_pay_date'], user_data['pay_frequency'], user_data['pay_dates'], )
+        pay_date = datetime.strptime(user_data['last_pay_date'], '%m/%d/%Y').date()
 
-        pay_period_expenses = self.get_pay_period_expenses(user_id=user.id)
-        # get due date bills between the pay cycles AND frequency bills
-        bills = self.get_bills(user_id=user.id)
+        for i in range(frequency):
+            bills = []
+            end_pay_date = pay_date + timedelta(days=13)
 
-        pay_date = datetime.strptime(user.last_pay_date, '%m/%d/%Y').date()
-        end_pay_date = pay_date + timedelta(days=13)
+            pay_period_expenses = self.get_pay_period_expenses(user_id=user_data['id'])
 
+            bills = bills + self.get_bills_by_user_id_range(user_id=user_data['id'], start=pay_date.day, end=end_pay_date.day)
+            bills = bills + self.get_bills_by_frequency(user_id=user_data['id'])
+
+            budget_schedule.append({
+            "pay_date": str(pay_date),
+            "end_pay_date": str(end_pay_date),
+            "pay_period_expenses": pay_period_expenses,
+            "bills": bills
+            })
+
+            pay_date = end_pay_date + timedelta(days=1)
+
+        return budget_schedule
 
 
     def cursor_to_pay_period_expenses(self, cur):
@@ -538,7 +430,7 @@ class User:
         return '<User %r>' % self.username
 
 class Bill:
-    def __init__(self, user_id, name, cost, due_date, frequency, last_paid, category):
+    def __init__(self, user_id, name, cost, last_paid, category, due_date=None, frequency=None):
         self.user_id = user_id
         self.name = name
         self.cost = cost
