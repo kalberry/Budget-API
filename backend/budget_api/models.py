@@ -70,6 +70,18 @@ class Database:
         cur.close()
         con.close()
 
+    def get_bill_by_id(self, id):
+        con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
+        cur = con.cursor()
+
+        sql = '''SELECT * FROM bills WHERE id=%s'''
+        data = (id, user_id)
+        cur.execute(sql, data)
+        bills.append(self.cursor_to_bills(cur))
+
+        con.close()
+        cur.close()
+
     def get_bills(self, id=[], user_id=None, start=None, end=None, frequency=False):
         bills = []
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
