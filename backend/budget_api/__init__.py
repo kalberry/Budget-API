@@ -27,17 +27,17 @@ class User(Resource):
         args = parser.parse_args()
 
         if (args['id']):
-            user = db.get_users({"id": args['id']})
+            user = db.get_users(id=args['id'])
             if (user != []):
                 return {"message": "User retrieved", "data": user}, 200
             else:
                 return {"message": "User not found"}, 404
-
-        users = db.get_users()
-        if (users):
-            return {"message": "Retrieved all users.", "data": users}, 200
         else:
-            return {"message": "Count not find user"}, 404
+            users = db.get_users()
+            if (users != []):
+                return {"message": "Retrieved all users.", "data": users}, 200
+            else:
+                return {"message": "Count not find user"}, 404
 
     def put(self):
         parser = reqparse.RequestParser()
@@ -53,23 +53,22 @@ class User(Resource):
 
         message = 'For ' + str(args['id']) + " we "
         if (args['email']):
-            db.update_user({"email": args['email'], "id": args['id']})
+            db.update_user(id=args['id'], email=args['email'])
             message += 'updated email. '
         if (args['password_hash']):
-            db.update_user({"password_hash": args['password_hash'], "id": args['id']})
+            db.update_user(id=args['id'], password_hash=args['password_hash'])
             message += 'updated password. '
         if (args['last_pay_date']):
-            db.update_user({"last_pay_date": args['last_pay_date'], "id": args['id']})
+            db.update_user(id=args['id'], last_pay_date=args['last_pay_date'])
             message += 'updated starting pay date. '
-        # TODO - Eventually make sure they can either have pay_freq or pay_dates
         if (args['pay_frequency']):
-            db.update_user({"pay_frequency": args['pay_frequency'], "id": args['id']})
+            db.update_user(id=args['id'], pay_frequency=args['pay_frequency'])
             message += 'updated pay frequency. '
         if (args['pay_dates']):
-            db.update_user({"pay_dates": args['pay_dates'], "id": args['id']})
+            db.update_user(id=args['id'], pay_dates=args['pay_dates'])
             message += 'updated pay dates. '
 
-        user = db.get_users({"id": args['id']})
+        user = db.get_users(id=args['id'])
         if (user):
             return {"message": message}, 200
         else:
@@ -81,7 +80,6 @@ class User(Resource):
         parser.add_argument('id', required=True)
 
         args = parser.parse_args()
-        print(args['id'])
 
         db.delete_user(args['id'])
 
@@ -97,12 +95,10 @@ class Bill(Resource):
 
         args = parser.parse_args()
 
-        print(args['id'])
-
         if (args['user_id'] and args['id']):
             return {"message": "Bad Request"}, 400
         elif (args['user_id'] and not args['id']):
-            user = db.get_bills({"user_id": args['user_id']})
+            user = db.get_bills(user_id=args['user_id'])
             return {"message": "Received bills successfully", "data": user}, 200
         elif (not args['user_id'] and args['id']):
             if len(args['id']) > 1:
@@ -148,11 +144,36 @@ class Bill(Resource):
         parser.add_argument('id', required=True)
 
         args = parser.parse_args()
-        print(args['id'])
 
         db.delete_bill(args['id'])
 
-        return 204
+        return {"message": "Bill deleted."}, 204
+
+    def put(self):
+        parser = reqparse.RequestParser()
+
+        parser.add_argument('id', required=True)
+        parser.add_argument('name')
+        parser.add_argument('cost')
+        parser.add_argument('category')
+
+        args = parser.parse_args()
+
+        id = args['id']
+        name = args['name']
+        cost = args['cost']
+        category = args['category']
+
+        if name:
+            db.update_bill(id=id, name=name)
+        if cost:
+            db.update_bill(id=id, cost=cost)
+        if category:
+            db.update_bill(id=id, category=category)
+
+        data = db.get_bills(id=id)
+
+        return {"message": "Bill updated.", "data": data}, 200
 
 class PayPeriodExpense(Resource):
     def get(self):
@@ -226,7 +247,9 @@ class PayPeriodExpense(Resource):
         if category:
             db.update_pay_period_expense(id=id, category=category)
 
-        return {"message": "Pay period updated."}, 200
+        data = db.get_pay_period_expenses(id=id)
+
+        return {"message": "Pay period updated.", "data": data}, 200
 
 class Register(Resource):
     def post(self):

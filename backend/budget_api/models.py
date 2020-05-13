@@ -23,7 +23,7 @@ class Database:
         password_hash varchar(80) NOT NULL, \
         last_pay_date varchar(80) NOT NULL, \
         pay_frequency int(10), \
-        pay_dates varchar(80) NOT NULL, \
+        pay_dates varchar(80), \
         PRIMARY KEY (id) \
         ) \
         ''')
@@ -100,7 +100,7 @@ class Database:
             return bill
         else:
             sql = '''SELECT * FROM bills'''
-            cur.execute(sql, data)
+            cur.execute(sql,)
             bill = self.cursor_to_bills(cur)
             con.close()
             cur.close()
@@ -145,10 +145,11 @@ class Database:
         else:
             sql = '''SELECT * FROM users'''
             cur.execute(sql,)
-            user = self.cursor_to_user(cur)
+            res = cur.fetchall()
+            users = self.tuple_to_user(res)
             cur.close()
             con.close()
-            return user
+            return users
 
     def register_user(self, email, password_hash, last_pay_date, pay_frequency, pay_dates):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
@@ -159,6 +160,10 @@ class Database:
         self.last_pay_date = last_pay_date
         self.pay_frequency = pay_frequency
         self.pay_dates = pay_dates
+        if pay_dates is not None:
+            pay_dates_int = json.dumps(list(map(int, pay_dates)))
+        else:
+            pay_dates_int = None
 
         sql = '''SELECT * FROM users WHERE email=%s LIMIT 1'''
         data = (email, )
@@ -172,7 +177,7 @@ class Database:
             return {}
         else:
             sql = '''INSERT INTO users (email, password_hash, last_pay_date, pay_frequency, pay_dates) VALUES (%s, %s, %s, %s, %s); '''
-            data = (email, password_hash, last_pay_date, pay_frequency, str(pay_dates))
+            data = (email, password_hash, last_pay_date, pay_frequency, pay_dates_int)
             cur.execute(sql, data)
             con.commit()
             sql = '''SELECT * FROM users WHERE email=%s LIMIT 1;'''
@@ -204,6 +209,11 @@ class Database:
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
+        if pay_dates is not None:
+            pay_dates_int = json.dumps(list(map(int, pay_dates)))
+        else:
+            pay_dates_int = None
+
         if email:
             sql = '''UPDATE users SET email=%s WHERE id=%s '''
             data = (email, id)
@@ -226,7 +236,7 @@ class Database:
             con.commit()
         if pay_dates:
             sql = '''UPDATE users SET pay_dates=%s WHERE id=%s '''
-            data = (pay_dates, id)
+            data = (pay_dates_int, id)
             cur.execute(sql, data)
             con.commit()
 
@@ -340,6 +350,29 @@ class Database:
         cur.close()
         con.close()
 
+    def update_bill(self, id, name=None, cost=None, category=None):
+        con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
+        cur = con.cursor()
+
+        if (name):
+            sql = '''UPDATE bills SET name=%s WHERE id=%s '''
+            data = (name, id)
+            cur.execute(sql, data)
+            con.commit()
+        if (cost):
+            sql = '''UPDATE bills SET cost=%s WHERE id=%s '''
+            data = (cost, id)
+            cur.execute(sql, data)
+            con.commit()
+        if (category):
+            sql = '''UPDATE bills SET category=%s WHERE id=%s '''
+            data = (category, id)
+            cur.execute(sql, data)
+            con.commit()
+
+        cur.close()
+        con.close()
+
     def get_budget_schedule(self, user_id, frequency=12):
         budget_schedule = []
         user_data = self.get_users(id=user_id)[0]
@@ -378,6 +411,48 @@ class Database:
             })
         return ppe
 
+    def tuple_to_user(self, user_tuple_list):
+        con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
+        cur = con.cursor()
+
+        users = []
+        for user_tuple in user_tuple_list:
+            id = user_tuple[0]
+            email = user_tuple[1]
+            password_hash = user_tuple[2]
+            last_pay_date = user_tuple[3]
+            pay_frequency = user_tuple[4]
+            pay_dates = user_tuple[5]
+
+            if pay_dates is not None:
+                pay_dates = json.loads(user_tuple[5])
+            else:
+                pay_dates = None
+
+            sql = '''SELECT * FROM bills WHERE user_id=%s'''
+            data = (id, )
+            cur.execute(sql, data)
+            bills = self.cursor_to_bills(cur)
+
+            sql = '''SELECT * FROM pay_period_expenses WHERE user_id=%s'''
+            data = (id, )
+            cur.execute(sql, data)
+            pay_period_expenses = self.cursor_to_pay_period_expenses(cur)
+
+            users.append({
+            "id": id,
+            "email": email,
+            "last_pay_date": last_pay_date,
+            "pay_frequency": pay_frequency,
+            "pay_dates": pay_dates,
+            "bills": bills,
+            "pay_period_expenses": pay_period_expenses
+            })
+
+        con.close()
+        cur.close()
+        return users
+
     def cursor_to_user(self, cur):
         users = []
         for (id, email, password_hash, last_pay_date, pay_frequency, pay_dates) in cur:
@@ -390,6 +465,11 @@ class Database:
             data = (id, )
             cur.execute(sql, data)
             pay_period_expenses = self.cursor_to_pay_period_expenses(cur)
+
+            if pay_dates is not None:
+                pay_dates = json.loads(pay_dates)
+            else:
+                pay_dates = None
 
             users.append({
             "id": id,
