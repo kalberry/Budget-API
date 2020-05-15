@@ -40,9 +40,18 @@ The responses will have the form
 {
   "id": 4,
   "email": "janedoe@email.com",
+  "password_hash": "4eqsashdh3h214jj4nb32g",
   "last_pay_date": "03/02/2020",
   "pay_frequency": 14,
-  "pay_dates": [0]
+  "pay_dates": [0],
+  "bills":
+  [
+        
+  ],
+  "pay_period_expenses":
+  [
+
+  ]
 }
 ```
 
@@ -66,9 +75,46 @@ The responses will have the form
 {
   "id": 4,
   "email": "janedoe@email.com",
+  "password_hash": "4eqsashdh3h214jj4nb32g",
   "last_pay_date": "03/02/2020",
   "pay_frequency": 14,
-  "pay_dates": [0]
+  "pay_dates": [0],
+  "bills":
+  [
+    {
+      "id": 6,
+      "name": "National Grid",
+      "cost": "43.47",
+      "due_date": 0,
+      "frequency": 30,
+      "last_paid": "03-07-2020",
+      "category": "utilities"
+    },
+    {
+      "id": 12,
+      "name": "Spectrum",
+      "cost": "49.99",
+      "due_date": 7,
+      "frequency": 30,
+      "last_paid": "03-14-2020",    
+      "category": "utilities"
+    }
+  ],
+  "pay_period_expenses":
+  [
+    {
+      "id": 3,
+      "name": "Groceries",
+      "cost": "250",
+      "category": "food"
+    },
+    {
+      "id": 5,
+      "name": "Gas",
+      "cost": "40.00",
+      "category": "automotive"
+    }
+  ]
 }
 ```
 
@@ -113,6 +159,7 @@ The responses will have the form
   {
     "id": 4,
     "email": "janedoe@email.com",
+    "password_hash": "4eqsashdh3h214jj4nb32g",
     "last_pay_date": "03/02/2020",
     "pay_frequency": 14,
     "pay_dates": [0],
@@ -156,6 +203,7 @@ The responses will have the form
   {
     "id": 5,
     "email": "johndoe@email.com",
+    "password_hash": "4eqsashdh3h214jj4nb32g",
     "last_pay_date": "02/25/2020",
     "pay_frequency": 0,
     "pay_dates": [1,15],

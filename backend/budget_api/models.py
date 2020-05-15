@@ -2,6 +2,7 @@ import mysql.connector
 import json
 import os
 from datetime import datetime, timedelta
+from werkzeug.security import check_password_hash
 
 class Database:
     DB_USERNAME = os.environ['DB_USERNAME']
@@ -194,16 +195,19 @@ class Database:
         cur = con.cursor()
 
         self.email = email
-        self.password_hash = password_hash
 
-        sql = '''SELECT * FROM users WHERE email=%s AND password_hash=%s LIMIT 1'''
-        data = (email, password_hash)
+        sql = '''SELECT * FROM users WHERE email=%s LIMIT 1'''
+        data = (email,)
         cur.execute(sql, data)
 
         user = self.cursor_to_user(cur)
         cur.close()
         con.close()
-        return user
+
+        if (check_password_hash(user.password_hash, password_hash)):
+            return user
+        else:
+            return []
 
     def update_user(self, id, email=None, password_hash=None, last_pay_date=None, pay_frequency=None, pay_dates=None):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
@@ -478,6 +482,7 @@ class Database:
             users.append({
             "id": id,
             "email": email,
+            "password_hash": password_hash,
             "last_pay_date": last_pay_date,
             "pay_frequency": pay_frequency,
             "pay_dates": pay_dates,
