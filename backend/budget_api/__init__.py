@@ -98,19 +98,32 @@ class Bill(Resource):
         if (args['user_id'] and args['id']):
             return {"message": "Bad Request"}, 400
         elif (args['user_id'] and not args['id']):
-            user = db.get_bills(user_id=args['user_id'])
-            return {"message": "Received bills successfully", "data": user}, 200
+            bills = db.get_bills(user_id=args['user_id'])
+            if bills != []:
+                return {"message": "Received bills successfully", "data": bills}, 200
+            else:
+                return {"message": "Cannot find bills"}, 404
         elif (not args['user_id'] and args['id']):
             if len(args['id']) > 1:
                 bills = []
                 for i in args['id']:
                     bills.append(db.get_bills(id=i)[0])
-                return {"message": "Received bill successfully", "data": bills}, 200
+                if bills != []:
+                    return {"message": "Received bill successfully", "data": bills}, 200
+                else:
+                    return {"message": "Cannot find bills"}, 404
             else:
                 bill = db.get_bills(id=args['id'][0])
-                return {"message": "Received bill successfully", "data": bill}, 200
+                if bill != []:
+                    return {"message": "Received bill successfully", "data": bill}, 200
+                else:
+                    return {"message", "Cannot find bill"}, 404
 
-        return {"message": "Getting all bills", "data": db.get_bills()}, 200
+        bills = db.get_bills()
+        if bills != []:
+            return {"message": "Getting all bills", "data": bills}, 200
+        else:
+            return {"message", "Cannot find bills"}, 404
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -171,9 +184,12 @@ class Bill(Resource):
         if category:
             db.update_bill(id=id, category=category)
 
-        data = db.get_bills(id=id)
+        bill = db.get_bills(id=id)
 
-        return {"message": "Bill updated.", "data": data}, 200
+        if bill != []:
+            return {"message": "Bill updated.", "data": bill}, 200
+        else:
+            return {"message": "Bill not found."}, 404
 
 class PayPeriodExpense(Resource):
     def get(self):
@@ -181,20 +197,39 @@ class PayPeriodExpense(Resource):
 
         parser.add_argument('user_id')
         parser.add_argument('id', action='append')
+        parser.add_argument('category')
 
         args = parser.parse_args()
 
         if (args['user_id'] and args['id']):
-            ppe = db.get_pay_period_expenses(user_id=args['user_id'], id=args['id'])
+            return {"message": "Bad Request"}, 400
         elif (args['user_id'] and not args['id']):
             ppe = db.get_pay_period_expenses(user_id=args['user_id'])
+            if ppe != []:
+                return {"message": "Received pay period expenses successfully", "data": ppe}, 200
+            else:
+                return {"message": "Cannot find pay period expenses"}, 404
         elif (not args['user_id'] and args['id']):
-            ppe = db.get_pay_period_expenses(id=args['id'])
+            if len(args['id']) > 1:
+                ppe = []
+                for i in args['id']:
+                    ppe.append(db.get_pay_period_expenses(id=i)[0])
+                if ppe != []:
+                    return {"message": "Received pay period expenses successfully", "data": ppe}, 200
+                else:
+                    return {"message": "Cannot find pay period expenses"}, 404
+            else:
+                ppe = db.get_pay_period_expenses(id=args['id'][0])
+                if ppe != []:
+                    return {"message": "Received pay period expense successfully", "data": ppe}, 200
+                else:
+                    return {"message": "Cannot find pay period expenses"}, 404
 
-        if ppe != None and ppe != []:
-            return {"message": "Recieved pay period expense request", "data": ppe}, 200
+        ppe=db.get_pay_period_expenses()
+        if ppe != []:
+            return {"message": "Getting all bills", "data": db.get_bills()}, 200
         else:
-            return 404
+            return {"message": "Cannot find pay period expenses"}, 404
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -206,11 +241,7 @@ class PayPeriodExpense(Resource):
 
         args = parser.parse_args()
 
-        if args['category'] is not None:
-            db.add_pay_period_expense(name=args['name'], cost=args['cost'], user_id=args['user_id'], category=args['category'])
-            db.get_pay_period_expenses()
-        else:
-            db.add_pay_period_expense(name=args['name'], cost=args['cost'], user_id=args['user_id'])
+        db.add_pay_period_expense(name=args['name'], cost=args['cost'], user_id=args['user_id'], category=args['category'])
 
         return {"message": "Pay period expense added successfully"}, 201
 
@@ -247,9 +278,12 @@ class PayPeriodExpense(Resource):
         if category:
             db.update_pay_period_expense(id=id, category=category)
 
-        data = db.get_pay_period_expenses(id=id)
+        ppe = db.get_pay_period_expenses(id=id)
 
-        return {"message": "Pay period updated.", "data": data}, 200
+        if ppe != []:
+            return {"message": "Pay period updated.", "data": ppe}, 200
+        else :
+            return {"message": "Cannot retrieve pay period expense."}, 404
 
 class Register(Resource):
     def post(self):
@@ -287,7 +321,7 @@ class Login(Resource):
 
         user = db.login_user(args['email'], args['password_hash'])
 
-        if user != {}:
+        if user != []:
             return {"message": "User logged in", "data": user}, 200
         else:
             return{"message": "User failed to register"}, 404
@@ -297,11 +331,13 @@ class BudgetSchedule(Resource):
         parser = reqparse.RequestParser()
 
         parser.add_argument('id', required=True)
+        parser.add_argument('count')
 
         args = parser.parse_args()
         id = args['id']
+        count = args['count']
 
-        budget_schedule =  db.get_budget_schedule(user_id=id)
+        budget_schedule =  db.get_budget_schedule(user_id=id, count=count)
         if (budget_schedule != []):
             return {"message": "Budget Schedule recieved", "data": budget_schedule}, 200
         else:

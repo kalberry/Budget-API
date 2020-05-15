@@ -404,7 +404,7 @@ The responses will have the form
 
 **Definition**
 
-`GET /api/v1/budgetschedule`
+`GET /api/v1/budget-schedule`
 
 **Arguments**
 

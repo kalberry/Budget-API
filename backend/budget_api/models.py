@@ -322,10 +322,11 @@ class Database:
             return ppe
         else:
             sql = '''SELECT * FROM pay_period_expenses'''
-            cur.execute(sql, data)
+            cur.execute(sql,)
+            ppe = self.cursor_to_pay_period_expenses(cur)
             con.close()
             cur.close()
-            return self.cursor_to_pay_period_expenses(cur)
+            return ppe
 
     def update_pay_period_expense(self, id, name=None, cost=None, category=None):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
@@ -373,12 +374,16 @@ class Database:
         cur.close()
         con.close()
 
-    def get_budget_schedule(self, user_id, frequency=12):
+    def get_budget_schedule(self, user_id, count=12):
         budget_schedule = []
-        user_data = self.get_users(id=user_id)[0]
+        user = self.get_users(id=user_id)
+        if user != []:
+            user_data = user[0]
+        else:
+            return []
         pay_date = datetime.strptime(user_data['last_pay_date'], '%m/%d/%Y').date()
 
-        for i in range(frequency):
+        for i in range(int(count)):
             bills = []
             end_pay_date = pay_date + timedelta(days=13)
 
@@ -397,7 +402,6 @@ class Database:
             pay_date = end_pay_date + timedelta(days=1)
 
         return budget_schedule
-
 
     def cursor_to_pay_period_expenses(self, cur):
         ppe = []
