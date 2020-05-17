@@ -21,7 +21,7 @@ class Database:
         ( \
         id int(11) NOT NULL AUTO_INCREMENT, \
         email varchar(80) NOT NULL UNIQUE, \
-        password_hash varchar(80) NOT NULL, \
+        password_hash varchar(160) NOT NULL, \
         last_pay_date varchar(80) NOT NULL, \
         pay_frequency int(10), \
         pay_dates varchar(80), \
@@ -156,6 +156,8 @@ class Database:
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
+        print(pay_dates == [])
+
         self.email = email
         self.password_hash = password_hash
         self.last_pay_date = last_pay_date
@@ -190,21 +192,24 @@ class Database:
             con.close()
             return user
 
-    def login_user(self, email, password_hash):
+    def login_user(self, email, password):
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
         self.email = email
+        self.password = password
 
         sql = '''SELECT * FROM users WHERE email=%s LIMIT 1'''
         data = (email,)
         cur.execute(sql, data)
 
         user = self.cursor_to_user(cur)
+        print('login ', user)
+        if user is []:
+            return []
         cur.close()
         con.close()
-
-        if (check_password_hash(user.password_hash, password_hash)):
+        if (check_password_hash(user[0]['password_hash'], password)):
             return user
         else:
             return []

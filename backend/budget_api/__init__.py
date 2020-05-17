@@ -287,6 +287,7 @@ class PayPeriodExpense(Resource):
 
 class Register(Resource):
     def post(self):
+        print('Register')
         parser = reqparse.RequestParser()
 
         parser.add_argument('email', required=True)
@@ -315,16 +316,16 @@ class Login(Resource):
         parser = reqparse.RequestParser()
 
         parser.add_argument('email', required=True)
-        parser.add_argument('password_hash', required=True)
+        parser.add_argument('password', required=True)
 
         args = parser.parse_args()
 
-        user = db.login_user(args['email'], args['password_hash'])
+        user = db.login_user(args['email'], args['password'])
 
         if user != []:
             return {"message": "User logged in", "data": user}, 200
         else:
-            return{"message": "User failed to register"}, 404
+            return{"message": "User failed to login"}, 404
 
 class BudgetSchedule(Resource):
     def get(self):

@@ -1,5 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Hello, {{ user.username }}!</h1>
+  {% if current_user.is_authenticated %}
+  <h1>Hello {{ current_user.email }}!</h1>
+  <h3>Last pay date: {{ current_user.last_pay_date }}</h3>
+  <h3>Pay frequency: {{ current_user.pay_frequency }}</h3>
+  <h3>Pay dates: {{ current_user.pay_dates }}</h3>
+  <h3>Bills: </h3>
+  {% if current_user.bills != None %}
+    {% for bill in current_user.bills %}
+      <p>{{ bill.name }} - ${{ bill.cost }}</p>
+    {% endfor %}
+  {% endif %}
+  <h3>Pay period expenses: </h3>
+  {% if current_user.pay_period_expenses != None %}
+    {% for ppe in current_user.pay_period_expenses %}
+      <p>{{ ppe.name }} - ${{ ppe.cost }}</p>
+    {% endfor %}
+  {% endif %}
+  {% else %}
+  <h1>Hello!</h1>
+  {% endif %}
 {% endblock %}

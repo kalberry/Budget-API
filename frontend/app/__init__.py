@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'applesauce'
 
-login = LoginManager(__name__)
+login = LoginManager(app)
+login.login_view = 'login'
 
 from app import routes

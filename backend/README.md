@@ -46,7 +46,7 @@ The responses will have the form
   "pay_dates": [0],
   "bills":
   [
-        
+
   ],
   "pay_period_expenses":
   [
