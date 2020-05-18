@@ -61,6 +61,36 @@ def register_user(email, password, last_pay_date, pay_frequency, pay_dates):
     else:
         return None
 
+def add_bill(user_id, name, cost, due_date, frequency, last_paid, category):
+    payload = {
+    'user_id': user_id,
+    'name': name,
+    'cost': cost,
+    'due_date': due_date,
+    'frequency': frequency,
+    'last_paid': last_paid,
+    'category': category
+    }
+
+    bill_data = requests.post(HOST + '/api/v1/bills', params=payload, verify=False)
+    if bill_data.status_code == 201:
+        return True
+    else:
+        return None
+
+def add_pay_period_expense(user_id, name, cost, category):
+    payload = {
+    'user_id': user_id,
+    'name': name,
+    'cost': cost,
+    'category': category
+    }
+
+    ppe_data = requests.post(HOST + '/api/v1/ppe', params=payload, verify=False)
+    if ppe_data.status_code == 201:
+        return True
+    else:
+        return None
 
 class User(UserMixin):
     def __init__(self, user_data):
@@ -91,6 +121,20 @@ class User(UserMixin):
 
     def get_id(self):
         return self.id
+
+    # def update_user(self, id):
+    #     payload = {"id": id}
+    #     user_data = requests.post(HOST + '/api/v1/auth/login', params=payload, verify=False)
+    #     if user_data.status_code == 200:
+    #         print('check user ', user_data)
+    #         if 'data' in user_data.json():
+    #             user = User(user_data.json()['data'][0])
+    #         if user:
+    #             return user
+    #         else:
+    #             return None
+    #     else:
+    #         return None
 
 
 class Bill:
