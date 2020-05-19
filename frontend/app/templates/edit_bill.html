@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <h1>Edit Bill</h1>
+  <form action="" method="post">
+      {{ form.hidden_tag() }}
+      <p>
+          {{ form.name.label }}<br>
+          {{ form.name(size=32) }}<br>
+          {% for error in form.name.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>
+          {{ form.cost.label }}<br>
+          {{ form.cost(size=32) }}<br>
+          {% for error in form.cost.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>
+          {{ form.due_date.label }}<br>
+          {{ form.due_date(size=32) }}<br>
+          {% for error in form.due_date.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>
+          {{ form.frequency.label }}<br>
+          {{ form.frequency(size=32) }}<br>
+          {% for error in form.frequency.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>
+          {{ form.last_paid.label }}<br>
+          {{ form.last_paid(size=32) }}<br>
+          {% for error in form.last_paid.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>
+          {{ form.category.label }}<br>
+          {{ form.category(size=32) }}<br>
+          {% for error in form.category.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>{{ form.submit() }}</p>
+  </form>
+
+{% endblock %}

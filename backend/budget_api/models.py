@@ -156,8 +156,6 @@ class Database:
         con = mysql.connector.connect(user=self.DB_USERNAME, password=self.DB_PASSWORD, host='127.0.0.1', database='budget')
         cur = con.cursor()
 
-        print(pay_dates == [])
-
         self.email = email
         self.password_hash = password_hash
         self.last_pay_date = last_pay_date
@@ -204,7 +202,6 @@ class Database:
         cur.execute(sql, data)
 
         user = self.cursor_to_user(cur)
-        print('login ', user)
         if user is []:
             return []
         cur.close()
@@ -383,7 +380,7 @@ class Database:
         cur.close()
         con.close()
 
-    def get_budget_schedule(self, user_id, count=12):
+    def get_budget_schedule(self, user_id, count=24):
         budget_schedule = []
         user = self.get_users(id=user_id)
         if user != []:

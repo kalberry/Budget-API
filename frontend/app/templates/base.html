@@ -12,8 +12,6 @@
           {% if current_user.is_anonymous %}
           <a href="{{ url_for('login') }}">Login</a>
           {% else %}
-          <a href="{{ url_for('ppe_add') }}">Add Pay Period Expense</a>
-          <a href="{{ url_for('bill_add') }}">Add Bill</a>
           <a href="{{ url_for('logout') }}">Logout</a>
           {% endif %}
         </div>

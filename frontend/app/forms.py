@@ -41,8 +41,27 @@ class AddBillForm(FlaskForm):
 
     # TODO: Add verification for either frequency or due date, not neither, not both
 
+class EditBillForm(FlaskForm):
+    name = StringField('Name of bill', validators=[DataRequired()])
+    cost = DecimalField('Cost of bill', validators=[DataRequired()])
+    due_date = IntegerField('Day bill is due', validators=[Optional()])
+    frequency = IntegerField('Days until bill due', validators=[Optional()])
+    last_paid = DateField('Day bill was last paid (m/d/y)', validators=[DataRequired()], format='%m/%d/%Y')
+    category = StringField('Category of bill (optional)', validators=[Optional()])
+    submit = SubmitField('Edit bill')
+
+    # TODO: Add verification for either frequency or due date, not neither, not both
+
 class AddPayPeriodExpense(FlaskForm):
     name = StringField('Name of bill', validators=[DataRequired()])
     cost = DecimalField('Cost of bill', validators=[DataRequired()])
     category = StringField('Category of bill (optional)', validators=[Optional()])
     submit = SubmitField('Add pay period expense')
+
+class EditPayPeriodExpense(FlaskForm):
+    name = StringField('Name of pay period expense', validators=[DataRequired()])
+    cost = DecimalField('Cost of pay period expense', validators=[DataRequired()])
+    category = StringField('Category of pay period expense (optional)', validators=[Optional()])
+    submit = SubmitField('Edit pay period expense')
+
+    # TODO: Add verification for either frequency or due date, not neither, not both

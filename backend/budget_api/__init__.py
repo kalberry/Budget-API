@@ -95,6 +95,7 @@ class Bill(Resource):
 
         args = parser.parse_args()
 
+        # TODO: Maybe user id and bill id?
         if (args['user_id'] and args['id']):
             return {"message": "Bad Request"}, 400
         elif (args['user_id'] and not args['id']):
@@ -287,7 +288,6 @@ class PayPeriodExpense(Resource):
 
 class Register(Resource):
     def post(self):
-        print('Register')
         parser = reqparse.RequestParser()
 
         parser.add_argument('email', required=True)
@@ -337,6 +337,9 @@ class BudgetSchedule(Resource):
         args = parser.parse_args()
         id = args['id']
         count = args['count']
+
+        if count == None:
+            count = 24
 
         budget_schedule =  db.get_budget_schedule(user_id=id, count=count)
         if (budget_schedule != []):

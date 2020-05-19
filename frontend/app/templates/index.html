@@ -6,18 +6,31 @@
   <h3>Last pay date: {{ current_user.last_pay_date }}</h3>
   <h3>Pay frequency: {{ current_user.pay_frequency }}</h3>
   <h3>Pay dates: {{ current_user.pay_dates }}</h3>
-  <h3>Bills: </h3>
+  <h3><a href="{{ url_for('bill_add') }}">Add</a> Bills: </h3>
   {% if current_user.bills != None %}
     {% for bill in current_user.bills %}
-      <p>{{ bill.name }} - ${{ bill.cost }}</p>
+      <p><a href="{{ url_for('bill_edit', id=bill.id) }}">Edit</a> {{ bill.name }} - ${{ bill.cost }}</p>
     {% endfor %}
   {% endif %}
-  <h3>Pay period expenses: </h3>
+  <h3><a href="{{ url_for('ppe_add') }}">Add</a> Pay period expenses: </h3>
   {% if current_user.pay_period_expenses != None %}
     {% for ppe in current_user.pay_period_expenses %}
-      <p>{{ ppe.name }} - ${{ ppe.cost }}</p>
+      <p><a href="{{ url_for('ppe_edit', id=ppe.id) }}">Edit</a> {{ ppe.name }} - ${{ ppe.cost }}</p>
     {% endfor %}
   {% endif %}
+  <h1>Budget Schedule</h3>
+  {% for pay_period in current_user.budget_schedule %}
+    <h2>{{ pay_period.pay_date }} - {{ pay_period.end_pay_date }}</h2>
+    <h3>Pay Period Expenses:</h3>
+    {% for ppe in pay_period.pay_period_expenses %}
+      {{ ppe.name }} - {{ ppe.cost }}
+    {% endfor %}
+    <h3>Bills:</h3>
+    {% for bill in pay_period.bills %}
+      ({{ bill.due_date }}) {{ bill.name }} - {{ bill.cost }}
+    {% endfor %}
+    <hr>
+  {% endfor %}
   {% else %}
   <h1>Hello!</h1>
   {% endif %}
